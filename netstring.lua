@@ -80,14 +80,14 @@ function netstring.read(stream, max_length)
         end
     end
 
-    local length = table.concat(length)
+    length = table.concat(length)
     -- Test length string against spec format
     if not length:match("[1-9][0-9]*") and length ~= "0" then
         return nil, "Length is invalid"
     end
 
     -- Convert to number
-    local length = tonumber(length)
+    length = tonumber(length)
     if length > max_length then
         return nil, "Length exeeds maximum length allowed"
     end
