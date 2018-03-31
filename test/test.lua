@@ -39,6 +39,12 @@ test("write sanity", function()
     end)
 end)
 
+test("read empty", function()
+    with_input("0:,", function(stream)
+        assert(assert(netstring.read(stream)) == "")
+    end)
+end)
+
 test("multiple reads", function()
     with_input("5:hello,5:world,", function(stream)
         assert(assert(netstring.read(stream)) == "hello")
