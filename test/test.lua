@@ -18,13 +18,14 @@ local function with_input(input_data, test_func)
     input_file:close()
 end
 
-local function with_output(expected_output, test_func)
+local function with_output(test_func)
     local output_file = io.tmpfile()
     test_func(output_file)
     output_file:flush()
     output_file:seek"set"
-    assert(output_file:read"*a" == expected_output)
+    output = output_file:read"*a"
     output_file:close()
+    return output
 end
 
 test("read sanity", function()
@@ -34,9 +35,10 @@ test("read sanity", function()
 end)
 
 test("write sanity", function()
-    with_output("12:hello world!,", function(stream)
+    local output = with_output(function(stream)
         netstring.write(stream, "hello world!")
     end)
+    assert(output == "12:hello world!,")
 end)
 
 test("read empty", function()
@@ -53,10 +55,11 @@ test("multiple reads", function()
 end)
 
 test("multiple writes", function()
-    with_output("5:hello,5:world,", function(stream)
+    local output = with_output(function(stream)
         netstring.write(stream, "hello")
         netstring.write(stream, "world")
     end)
+    assert(output == "5:hello,5:world,")
 end)
 
 test("half read", function()
@@ -73,7 +76,8 @@ test("max length read", function()
 end)
 
 test("max length write", function()
-    with_output("", function(stream)
+    local output = with_output(function(stream)
         assert(netstring.write(stream, "hello world!", 5) == nil)
     end)
+    assert(output == "")
 end)
