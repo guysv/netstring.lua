@@ -7,7 +7,7 @@ A lightweight [Netstring](https://en.wikipedia.org/wiki/Netstring) library for L
 * Reads and writes netstrings into any "io.file"-like stream
 
 ## Usage
-#### note: This documentation is incomplete, please read function comments
+#### note: This documentation is incomplete, please read function comments (or generate docs with LDoc)
 The library provides the following functions:
 
 #### netstring.read(stream[, max_length])
