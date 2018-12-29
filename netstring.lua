@@ -25,7 +25,7 @@
 --- A lightweight Netstring library for Lua
 -- @module netstring
 
-local netstring = {_version = "0.1.0"}
+local netstring = {_version = "0.2.0dev"}
 
 --- Default maximum data length for read and write operations
 -- @see netstring.read
@@ -49,10 +49,6 @@ end
 --                   before dropping
 --                   (Defaults to @{DEFAULT_MAX_LENGTH})
 -- @return the decoded data from the netstring
--- @error Error message. Please note that in case that
---        function fails to write into the stream, no
---        roll back is done. The stream is probebly
---        corrupted and should be abandoned
 function netstring.read(stream, max_length)
     -- Calculate upper limits on length section
     local max_length = max_length or
@@ -64,10 +60,7 @@ function netstring.read(stream, max_length)
     -- Read length
     while true do
         -- Length is log10(#data) so it's not that bad
-        local char_read = stream:read(1)
-        if not char_read then
-            return nil, "Could not read length"
-        end
+        local char_read = assert(stream:read(1))
         -- End of length characters
         if char_read == ":" then
             break
@@ -76,31 +69,28 @@ function netstring.read(stream, max_length)
         table.insert(length, char_read)
         -- Test if length string exeeds its limit
         if #length > max_length_str then
-            return nil, "Length exeeds maximum length allowed"
+            error("Length exeeds maximum length allowed")
         end
     end
 
     length = table.concat(length)
     -- Test length string against spec format
     if not length:match("[1-9][0-9]*") and length ~= "0" then
-        return nil, "Length is invalid"
+        error("Length is invalid")
     end
 
     -- Convert to number
     length = tonumber(length)
     if length > max_length then
-        return nil, "Length exeeds maximum length allowed"
+        error("Length exeeds maximum length allowed")
     end
 
     -- Read string
-    local data = stream:read(length)
-    if not data then
-        return nil, "Could not read data"
-    end
+    local data = assert(stream:read(length))
 
     -- Find ending character
     if stream:read(1) ~= "," then
-        return nil, "Could not read ending character"
+        error("Could not read ending character")
     end
 
     return data
@@ -113,7 +103,6 @@ end
 -- @param max_length maximum length of payload to write
 --                   (Defaults to @{DEFAULT_MAX_LENGTH})
 -- @return true on success
--- @error error message
 function netstring.write(stream, data, max_length)
     -- Calculate upper limits on length
     local max_length = max_length or
@@ -121,11 +110,11 @@ function netstring.write(stream, data, max_length)
 
     -- Test length
     if #data > max_length then
-        return nil, "Length exeeds maximum length allowed"
+        error("Length exeeds maximum length allowed")
     end
 
     -- Write string to stream
-    stream:write(format_net_string(data))
+    assert(stream:write(format_net_string(data)))
     return true
 end
 
